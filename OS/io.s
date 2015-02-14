@@ -17,13 +17,27 @@ global inb
 ; stack: [esp + 4] The address of the I/O port
 ;        [esp    ] The return address
 inb:
-    mov dx, [esp + 4]       ; move the address of the I/O port to the dx register
-    in  al, dx              ; read a byte from the I/O port and store it in the al register
-    ret                     ; return the read byte
+	mov dx, [esp + 4]       ; move the address of the I/O port to the dx register
+	in  al, dx              ; read a byte from the I/O port and store it in the al register
+	ret                     ; return the read byte
 
 global loadgdt
 
 loadgdt:
-    mov   eax, [esp + 4]
-    lgdt  [eax]
-    ret
+	mov		eax, [esp + 4]
+	lgdt 	[eax]
+	ret
+
+global initgdt
+
+initgdt:
+	jmp		0x08:flush_cs
+
+flush_cs:
+	mov 	ax, 0x10
+	mov 	ds, ax
+	mov 	ss, ax
+	mov 	es, ax
+	mov 	fs, ax
+	mov 	gs, ax
+	ret
