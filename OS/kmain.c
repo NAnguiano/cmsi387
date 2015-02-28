@@ -166,18 +166,54 @@ void log(char *buf, unsigned int len, unsigned int type) {
     serial_write(buf, len);
 }
 
+void encodeGdtEntry(unsigned char *target, struct gdt source)
+{
+    if (source.limit > 65536) {
+        // Adjust granularity if required
+        source.limit = source.limit >> 12;
+        target[6] = 0xC0;
+    } else {
+        target[6] = 0x40;
+    }
+ 
+    // Encode the limit
+    target[0] = source.limit & 0xFF;
+    target[1] = (source.limit >> 8) & 0xFF;
+    target[6] |= (source.limit >> 16) & 0xF;
+ 
+    // Encode the base 
+    target[2] = source.base & 0xFF;
+    target[3] = (source.base >> 8) & 0xFF;
+    target[4] = (source.base >> 16) & 0xFF;
+    target[7] = (source.base >> 24) & 0xFF;
+ 
+    // And... Type
+    target[5] = source.type;
+}
+
+void gdt_load() {
+    struct gdt source[4];
+    source[0].base=0;
+    source[0].limit=0;
+    source[0].type=0;                     // Selector 0x00 cannot be used
+    source[1].base=0;
+    source[1].limit=0xffffffff;
+    source[1].type=0x9A;         // Selector 0x08 will be our code
+    source[2].base=0;
+    source[2].limit=0xffffffff;
+    source[2].type=0x92;         // Selector 0x10 will be our data
+
+    unsigned long global_descriptor_table[4];
+    int i;
+    for (i = 0; i < 4; i++) {
+        encodeGdtEntry((unsigned char*)&global_descriptor_table[i], source[i]);
+    }
+
+    setGdt(&(global_descriptor_table[0]), sizeof(global_descriptor_table[0]));
+}
+
 int kmain() {
-    struct gdt x, y, z;
-    x.address = 0;
-    x.size = 0;
-    loadgdt(&x);
-    y.address = 8;
-    y.size = 0xffff;
-    loadgdt(&y);
-    z.address = 10;
-    z.size = 0xffff;
-    loadgdt(&z);
-    // initgdt();
+    gdt_load();
     char str[] = "Loaded the GDT.";
     unsigned int size_str = sizeof(str) - 1;
     fb_write(str, size_str, FB_CYAN, FB_DARK_GREY);

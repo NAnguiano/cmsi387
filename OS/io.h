@@ -1,11 +1,11 @@
-
-
 #ifndef INCLUDE_IO_H
 #define INCLUDE_IO_H
 struct gdt {
-    unsigned int address;
-    unsigned short size;
+    unsigned int base;
+    unsigned int limit;
+    unsigned int type;
 } __attribute__((packed));
+
 /** outb:
  *  Sends the given data to the given I/O port. Defined in io.s
  *
@@ -22,7 +22,6 @@ void outb(unsigned short port, unsigned char data);
  */
 unsigned char inb(unsigned short port);
 
-void loadgdt(struct gdt *table);
-void initgdt();
+void setGdt(unsigned long* globalDescriptorTable, unsigned int sizeOfGDT);
 
 #endif /* INCLUDE_IO_H */

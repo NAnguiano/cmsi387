@@ -21,23 +21,15 @@ inb:
 	in  al, dx              ; read a byte from the I/O port and store it in the al register
 	ret                     ; return the read byte
 
-global loadgdt
+global setGdt
 
-loadgdt:
-	mov		eax, [esp + 4]
-	lgdt 	[eax]
-	ret
-
-global initgdt
-
-initgdt:
-	jmp		0x08:flush_cs
-
-flush_cs:
-	mov 	ax, 0x10
-	mov 	ds, ax
-	mov 	ss, ax
-	mov 	es, ax
-	mov 	fs, ax
-	mov 	gs, ax
-	ret
+gdtr DW 0 ; For limit storage
+     DD 0 ; For base storage
+ 
+setGdt:
+   MOV   EAX, [esp + 4]
+   MOV   [gdtr + 2], EAX
+   MOV   AX, [ESP + 8]
+   MOV   [gdtr], AX
+   LGDT  [gdtr]
+   RET
