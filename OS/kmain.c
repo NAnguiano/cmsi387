@@ -1,4 +1,5 @@
 #include "io.h"
+//#include "idt.h"
 
 #define FB_BLACK         0
 #define FB_BLUE          1
@@ -214,7 +215,7 @@ void gdt_load() {
 
 int kmain() {
     gdt_load();
-    char str[] = "Loaded the GDT.";
+    char str[] = "The GDT has been loaded. Awww yeah.";
     unsigned int size_str = sizeof(str) - 1;
     fb_write(str, size_str, FB_CYAN, FB_DARK_GREY);
     log(str, size_str, DEBUG);
