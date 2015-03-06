@@ -25,4 +25,6 @@ void interrupt_handler(struct cpu_state cpu, struct stack_state stack, unsigned 
     // TELL ME WHERE I FAILED *_*
 }
 
+void load_idt(void* address);
+
 #endif /* INCLUDE_IO_H */
