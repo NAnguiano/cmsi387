@@ -1,5 +1,3 @@
-
-
 %macro no_error_code_interrupt_handler 1
 global interrupt_handler_%1
 interrupt_handler_%1:

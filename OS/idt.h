@@ -19,6 +19,10 @@ struct stack_state {
     unsigned int eflags;
 } __attribute__((packed));
 
-void interrupt_handler(struct cpu_state cpu, struct stack_state stack, unsigned int interrupt);
+void interrupt_handler(struct cpu_state cpu, struct stack_state stack, unsigned int interrupt) {
+    // DO STUFF HERE?!
+    // I tried with having it return something too. Didn't work.
+    // TELL ME WHERE I FAILED *_*
+}
 
 #endif /* INCLUDE_IO_H */
