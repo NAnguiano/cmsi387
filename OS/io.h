@@ -1,10 +1,5 @@
 #ifndef INCLUDE_IO_H
 #define INCLUDE_IO_H
-struct gdt {
-    unsigned int base;
-    unsigned int limit;
-    unsigned int type;
-} __attribute__((packed));
 
 /** outb:
  *  Sends the given data to the given I/O port. Defined in io.s

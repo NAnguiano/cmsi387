@@ -1,5 +1,5 @@
 #include "io.h"
-//#include "idt.h"
+#include "idt.h"
 
 #define FB_BLACK         0
 #define FB_BLUE          1
@@ -26,7 +26,7 @@
 #define FB_HIGH_BYTE_COMMAND    14
 #define FB_LOW_BYTE_COMMAND     15
 
-unsigned int characterLocation = 0;
+//unsigned int characterLocation = 0;
 
 #define DEBUG 0
 #define INFO  1
@@ -55,41 +55,35 @@ unsigned int characterLocation = 0;
  */
 #define SERIAL_LINE_ENABLE_DLAB         0x80
 
-/** fb_write_cell:
- *  Writes a character with the given foreground and background to position i
- *  in the framebuffer.
- *
- *  @param i  The location in the framebuffer
- *  @param c  The character
- *  @param fg The foreground color
- *  @param bg The background color
- */
-void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg){
-    char *fb = (char *) 0x000B8000;
-    fb[i] = c;
-    fb[i + 1] = ((fg & 0x0F) << 4) | (bg & 0x0F);
-}                                           
+ /* reinitialize the PIC controllers, giving them specified vector offsets
+   rather than 8h and 70h, as configured by default */
+ 
+#define ICW1_ICW4   0x01        /* ICW4 (not) needed */
+#define ICW1_SINGLE 0x02        /* Single (cascade) mode */
+#define ICW1_INTERVAL4  0x04        /* Call address interval 4 (8) */
+#define ICW1_LEVEL  0x08        /* Level triggered (edge) mode */
+#define ICW1_INIT   0x10        /* Initialization - required! */
+ 
+#define ICW4_8086   0x01        /* 8086/88 (MCS-80/85) mode */
+#define ICW4_AUTO   0x02        /* Auto (normal) EOI */
+#define ICW4_BUF_SLAVE  0x08        /* Buffered mode/slave */
+#define ICW4_BUF_MASTER 0x0C        /* Buffered mode/master */
+#define ICW4_SFNM   0x10        /* Special fully nested (not) */
 
-/** fb_move_cursor:
- *  Moves the cursor of the framebuffer to the given position
- *
- *  @param pos The new position of the cursor
- */
-void fb_move_cursor(unsigned short pos) {
-    outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
-    outb(FB_DATA_PORT,    ((pos >> 8) & 0x00FF));
-    outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
-    outb(FB_DATA_PORT,    pos & 0x00FF);
-}
+#define PIC1        0x20        /* IO base address for master PIC */
+#define PIC2        0xA0        /* IO base address for slave PIC */
+#define PIC1_COMMAND    PIC1
+#define PIC1_DATA   (PIC1+1)
+#define PIC2_COMMAND    PIC2
+#define PIC2_DATA   (PIC2+1)
 
-void fb_write(char *buf, unsigned int len, unsigned char bg, unsigned char fg) {
-    unsigned int i;
-    for(i = 0; i < len; i++) {
-        fb_write_cell(characterLocation, buf[i], bg, fg);
-        characterLocation += 2;
-    }
-    fb_move_cursor(characterLocation/2);
-}
+ struct gdt {
+    unsigned int base;
+    unsigned int limit;
+    unsigned int type;
+} __attribute__((packed));
+
+
 
 /** serial_configure_baud_rate:
  *  Sets the speed of the data being sent. The default speed of a serial
@@ -209,16 +203,64 @@ void gdt_load() {
     for (i = 0; i < 4; i++) {
         encodeGdtEntry((unsigned char*)&global_descriptor_table[i], source[i]);
     }
-
     setGdt(&(global_descriptor_table[0]), sizeof(global_descriptor_table[0]));
 }
 
+void create_idt() {
+    unsigned int idt[512];
+    unsigned int value = &interrupt_handler_4;
+    int i = 0;
+    for(i = 0; i < 21; i = i + 2) {
+        idt[i] = ((value & 0xFFFF0000) + 0x00008E00);
+        idt[i + 1] = ((value & 0x0000FFFF) + 0x00080000);
+    }
+    load_idt(&idt);
+}
+
+/*
+arguments:
+    offset1 - vector offset for master PIC
+        vectors on the master become offset1..offset1+7
+    offset2 - same for slave PIC: offset2..offset2+7
+*/
+void PIC_remap(int offset1, int offset2)
+{
+    unsigned char a1, a2;
+ 
+    a1 = inb(PIC1_DATA);                      // save masks
+    a2 = inb(PIC2_DATA);
+ 
+    outb(PIC1_COMMAND, ICW1_INIT+ICW1_ICW4);  // starts the initialization sequence (in cascade mode)
+    outb(PIC2_COMMAND, ICW1_INIT+ICW1_ICW4);
+    outb(PIC1_DATA, offset1);                 // ICW2: Master PIC vector offset
+    outb(PIC2_DATA, offset2);                 // ICW2: Slave PIC vector offset
+    outb(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+    outb(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
+ 
+    outb(PIC1_DATA, ICW4_8086);
+    outb(PIC2_DATA, ICW4_8086);
+ 
+    outb(PIC1_DATA, a1);   // restore saved masks.
+    outb(PIC2_DATA, a2);
+}
+
 int kmain() {
+    char str1[] = "The GDT has been loaded. Awww yeah.";
+    unsigned int size_str1 = sizeof(str1) - 1;
     gdt_load();
-    char str[] = "The GDT has been loaded. Awww yeah.";
-    unsigned int size_str = sizeof(str) - 1;
-    fb_write(str, size_str, FB_CYAN, FB_DARK_GREY);
-    log(str, size_str, DEBUG);
+    fb_write(str1, size_str1, FB_BLACK, FB_WHITE);
+    char str2[] = "The PIC has been remapped. Awww yeah.";
+    unsigned int size_str2 = sizeof(str2) - 1;
+    PIC_remap(0x20, 0x28);
+    fb_write(str2, size_str2, FB_CYAN, FB_DARK_GREY);
+    char str3[] = "The IDT has been loaded. Awww yeah.";
+    unsigned int size_str3 = sizeof(str3) - 1;
+    create_idt();
+    fb_write(str3, size_str3, FB_BROWN, FB_LIGHT_RED);
+    int x = 0x7FFFFFFF;
+    int y = 1;
+    int z = x + y;
+    z = z;
     return 0;
 }
 
