@@ -116,7 +116,10 @@ void fb_write_char(char stuff, unsigned char bg, unsigned char fg) {
 void fb_write(char *buf, unsigned int len, unsigned char bg, unsigned char fg) {
     unsigned int i;
     for(i = 0; i < len; i++) {
-        fb_write_char(buf[i], bg, fg);
+        char str2[] = "The PIC has been remapped. Awww yeah.";
+        unsigned int size_str2 = sizeof(str2) - 1;
+        fb_write(str2, size_str2, FB_CYAN, FB_DARK_GREY);
+        //fb_write_char(buf[i], bg, fg);
     }
     fb_move_cursor(characterLocation/2);
 }
@@ -159,8 +162,6 @@ void interrupt_handler(struct cpu_state cpu, struct stack_state stack, unsigned 
     stack = stack;
     interrupt = interrupt;
     if(interrupt == 9) {
-        
-        //fb_write_char(read_scan_code());
         
     }
     pic_acknowledge(interrupt);

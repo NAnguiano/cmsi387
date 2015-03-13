@@ -251,11 +251,11 @@ int kmain() {
     fb_write(str1, size_str1, FB_BLACK, FB_WHITE);
     char str2[] = "The PIC has been remapped. Awww yeah.";
     unsigned int size_str2 = sizeof(str2) - 1;
-    PIC_remap(0x20, 0x28);
     fb_write(str2, size_str2, FB_CYAN, FB_DARK_GREY);
     char str3[] = "The IDT has been loaded. Awww yeah.";
     unsigned int size_str3 = sizeof(str3) - 1;
     create_idt();
+    PIC_remap(0x20, 0x28);
     fb_write(str3, size_str3, FB_BROWN, FB_LIGHT_RED);
     int x = 0x7FFFFFFF;
     int y = 1;
