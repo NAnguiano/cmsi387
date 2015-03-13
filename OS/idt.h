@@ -118,8 +118,8 @@ void fb_write(char *buf, unsigned int len, unsigned char bg, unsigned char fg) {
     for(i = 0; i < len; i++) {
         char str2[] = "The PIC has been remapped. Awww yeah.";
         unsigned int size_str2 = sizeof(str2) - 1;
-        fb_write(str2, size_str2, FB_CYAN, FB_DARK_GREY);
-        //fb_write_char(buf[i], bg, fg);
+        //fb_write(str2, size_str2, FB_CYAN, FB_DARK_GREY);
+        fb_write_char(buf[i], bg, fg);
     }
     fb_move_cursor(characterLocation/2);
 }
