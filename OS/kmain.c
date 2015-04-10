@@ -270,28 +270,7 @@ void create_idt() {
 */
 }
 
-/* Use this function to set an entry in the IDT. Alot simpler
-*  than twiddling with the GDT ;) */
-void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
-{
-    /*  take the
-    *  argument 'base' and split it up into a high and low 16-bits,
-    *  storing them in idt[num].base_hi and base_lo. The rest of the
-    *  fields that you must set in idt[num] are fairly self-
-    *  explanatory when it comes to setup 
-    */
 
-    /* The interrupt routine's base address */
-    idt[num].base_lo = (base & 0xFFFF); // I assume it ands the last 16 bits only
-    idt[num].base_hi = (base >> 16) & 0xFFFF; //shifts number to right so we see first 16 bits (high)
-
-    /* The segment or 'selector' that this IDT entry will use
-    *  is set here, along with any access flags 
-    */
-    idt[num].always0 = 0;
-    idt[num].sel = sel;
-    idt[num].flags = flags;
-}
 
 /* Installs the IDT */
 void idt_install()
