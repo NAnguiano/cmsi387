@@ -1,12 +1,7 @@
-# Many thanks to the OS series at OSDever.net and JamesMolloy.co.uk for help!
-# Links used in this file: 
-# http://www.osdever.net/bkerndev/Docs/creatingmain.htm
-
-OBJECTS = loader.o main.o screen.o
+OBJECTS = loader.o 
 CC = gcc
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -Wall -Wextra -c \
-         -O -fstrength-reduce -fomit-frame-pointer -finline-functions -I./include
+         -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c
 LDFLAGS = -T link.ld -melf_i386
 AS = nasm
 ASFLAGS = -f elf
@@ -39,4 +34,4 @@ run: os.iso
 	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o kernel.elf os.iso
+    	rm -rf *.o kernel.elf os.iso
