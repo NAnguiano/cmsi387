@@ -5,7 +5,7 @@
 OBJECTS = loader.o main.o screen.o
 CC = gcc
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -Wall -Wextra -c \
+         -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c \
          -O -fstrength-reduce -fomit-frame-pointer -finline-functions -I./include
 LDFLAGS = -T link.ld -melf_i386
 AS = nasm

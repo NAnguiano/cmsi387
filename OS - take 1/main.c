@@ -2,35 +2,32 @@
  Many thanks to the OS series at OSDever.net and JamesMolloy.co.uk for help!
  Links used in this file: 
  http://www.osdever.net/bkerndev/Docs/creatingmain.htm
+ http://www.osdever.net/bkerndev/Docs/whatsleft.htm
  http://www.osdever.net/bkerndev/Docs/printing.htm
 */
 
 #include "system.h"
 
-void *memcpy(void *dest, const void *src, size_t count)
-{
+void *memcpy(void *dest, const void *src, size_t count) {
     const char *sp = (const char *)src;
     char *dp = (char *)dest;
     for(; count != 0; count--) *dp++ = *sp++;
     return dest;
 }
 
-void *memset(void *dest, char val, size_t count)
-{
+void *memset(void *dest, char val, size_t count) {
     char *temp = (char *)dest;
     for( ; count != 0; count--) *temp++ = val;
     return dest;
 }
 
-unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
-{
+unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count) {
     unsigned short *temp = (unsigned short *)dest;
     for( ; count != 0; count--) *temp++ = val;
     return dest;
 }
 
-size_t strlen(const char *str)
-{
+size_t strlen(unsigned char *str) {
     size_t retval;
     for(retval = 0; *str != '\0'; str++) retval++;
     return retval;
@@ -39,8 +36,7 @@ size_t strlen(const char *str)
 /* We will use this later on for reading from the I/O ports to get data
 *  from devices such as the keyboard. We are using what is called
 *  'inline assembly' in these routines to actually do the work */
-unsigned char inportb (unsigned short _port)
-{
+unsigned char inportb (unsigned short _port) {
     unsigned char rv;
     __asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (_port));
     return rv;
@@ -50,18 +46,16 @@ unsigned char inportb (unsigned short _port)
 *  will be used in the next tutorial for changing the textmode cursor
 *  position. Again, we use some inline assembly for the stuff that simply
 *  cannot be done in C */
-void outportb (unsigned short _port, unsigned char _data)
-{
+void outportb (unsigned short _port, unsigned char _data) {
     __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
 }
 
-/* This is a very simple main() function. All it does is sit in an
-*  infinite loop. This will be like our 'idle' loop */
-int main()
-{
-    /* You would add commands after here */
-    init_video();
-    puts("Hello World!");
+// Main function
+int main() {
+
+    //init_video();
+    unsigned char stringg[] = "If this could do something, that would be bananas.";
+    puts(stringg);
 
     /* ...and leave this loop in. There is an endless loop in
     *  'start.asm' also, if you accidentally delete this next line */
