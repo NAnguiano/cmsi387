@@ -5,6 +5,7 @@
 #define TIMER_H
 
 #include "common.h"
+#include "isr.h"
 
 void init_timer(u32int frequency);
 

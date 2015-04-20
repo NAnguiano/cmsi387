@@ -5,6 +5,7 @@
 #include "monitor.h"
 #include "descriptortables.h"
 #include "timer.h"
+#include "keyboard.h"
 
 int main(struct multiboot *mboot_ptr)
 {
@@ -15,12 +16,11 @@ int main(struct multiboot *mboot_ptr)
     // Write out a sample string
     monitor_write("Hello, world!\n");
 
-    asm volatile("int $0x3");
-    asm volatile("int $0x4");
+    //asm volatile("int $0x3");
+    //asm volatile("int $0x4");
 
-    asm volatile("int $0x6");
-
-    init_timer(50);
+    //init_timer(50);
+    keyboard_install();
 
     return 0;
 }

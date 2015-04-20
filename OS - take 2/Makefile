@@ -2,7 +2,8 @@
 # Links used in this file: 
 # http://www.osdever.net/bkerndev/Docs/creatingmain.htm
 
-OBJECTS = main.o boot.o monitor.o common.o descriptortables.o gdt.o interrupt.o isr.o timer.o
+OBJECTS = main.o boot.o monitor.o common.o descriptortables.o gdt.o  \
+          interrupt.o isr.o timer.o keyboard.o 
 CC = gcc
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
          -nostartfiles -nodefaultlibs -Wall -Wextra -c \
